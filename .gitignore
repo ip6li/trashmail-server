@@ -3,3 +3,5 @@ __pycache__
 lmtp-server.iml
 out
 venv
+.DS_Store
+
