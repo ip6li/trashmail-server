@@ -1,7 +1,8 @@
-import redis
 import email
-from redisconfig import RedisConfig
+import time
 import json
+import hashlib
+from storage_mongodb import Mongo
 
 
 class Storage:
@@ -19,7 +20,21 @@ class Storage:
 
     @staticmethod
     def storeMsg(peer, mailfrom, rcpttos, data, **kwargs):
+        parser = email.message_from_bytes(data)
+        field = "X-Original-To"
+        if field in parser:
+            key = parser[field]
+        else:
+            return False
+
+        timestamp = int(time.time())
+        m = hashlib.sha256()
+        m.update(str(timestamp).encode("utf8"))
+        m.update(key.encode("utf8"))
         msg = {
+            "id": m.hexdigest().encode("utf8"),
+            "X-Original-To": key,
+            "timestamp": timestamp,
             "mailPeer": peer,
             "mailFrom": mailfrom,
             "mailTo": rcpttos,
@@ -27,37 +42,12 @@ class Storage:
             "headers": kwargs
         }
 
-        parser = email.message_from_bytes(data)
-        field = "X-Original-To"
-        if field in parser:
-            key = parser[field]
-            print(field, ': ', key)
-            Storage.storeAsJson(key, msg)
+        res = Mongo.insert(msg)
+        if res is not None:
             return True
         else:
             return False
 
     @staticmethod
-    def open():
-        redisServerConfig = RedisConfig.getRedisServer()
-        Storage.redis = redis.Redis(host=redisServerConfig["host"], port=redisServerConfig["port"], db=0)
-        return Storage.redis is not None
-
-    @staticmethod
-    def close():
-        # do nothing yet
-        return
-
-    @staticmethod
-    def store(key, value):
-        return Storage.redis.set(key, value)
-
-    @staticmethod
-    def storeAsJson(key, value):
-        json_data = json.dumps(value)
-        return Storage.redis.set(key, json_data)
-
-    @staticmethod
-    def read(key):
-        return Storage.redis.get(key)
-
+    def toJson(data):
+        return json.dumps(data)

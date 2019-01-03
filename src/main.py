@@ -10,22 +10,17 @@ import signal
 import threading
 import logging.handlers
 import lmtp
+from config import Config
 from server import Server
-from redisconfig import RedisConfig
 
 
 DEBUG = True
 # DEBUG = False
 
-runUser = "cf"
-runGrp = "cf"
+runUser = Config.getRunUser()
+runGrp = Config.getRunGrp()
 
-
-if DEBUG:
-    lockFileDir = '/tmp/lmtp-server'
-else:
-    lockFileDir = '/var/run/lmtp-server'
-
+lockFileDir = Config.getLockFileDir()
 lockFileName = lockFileDir + '/server.pid'
 
 cadmUid = pwd.getpwnam(runUser).pw_uid
@@ -38,8 +33,6 @@ handler = logging.handlers.SysLogHandler(address='/dev/log')
 formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
 handler.setFormatter(formatter)
 syslog.addHandler(handler)
-
-RedisConfig.setRedisServer("172.17.0.2", 6379)
 
 
 def delpid():
@@ -100,7 +93,6 @@ def do_main_program():
 
 
 def do_main_daemon():
-    # see http://www.jejik.com/files/examples/daemon3x.py
     try:
         with open(lockFileName, 'r') as pf:
             pid = int(pf.read().strip())

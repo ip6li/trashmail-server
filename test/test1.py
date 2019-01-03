@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
+sys.path.insert(0, "../src")
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-import redis
-import json
+from pymongo import MongoClient
+from config import Config
 
 
 class Test1:
@@ -32,18 +34,20 @@ class Test1:
 
     @staticmethod
     def readMail(u):
-        r = redis.Redis(host="172.17.0.2", port=6379, db=0)
-        res = json.loads(r.get(u))
-        s = json.dumps(res, indent=4, sort_keys=True)
-        print (s)
+        client = MongoClient(Config.getMongoURL())
+        db = client[Config.getDB()]
+        posts = db.posts
+
+        for post in posts.find({"X-Original-To": "joe.test.0@example.com"}):
+            print(post)
 
     @staticmethod
-    def gen10Mails():
-        for i in range(10):
+    def genMails(count):
+        for i in range(count):
             u = "joe.test."+str(i)+"@example.com"
             Test1.sendMail(u)
 
 
 user="joe.test@example.com"
-Test1.gen10Mails()
+Test1.genMails(1000)
 Test1.readMail(user)
