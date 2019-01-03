@@ -3,6 +3,7 @@ import asyncore
 from threading import Thread
 from server import Server
 from storage import Storage
+from config import Config
 
 
 class LMTPChannel(SMTPChannel):
@@ -16,14 +17,15 @@ class LMTPServer(SMTPServer):
         SMTPServer.__init__(self, localaddr, remoteaddr)
 
     def process_message_thread(self, peer, mailfrom, rcpttos, data, **kwargs):
-        #Storage.printMsg(peer, mailfrom, rcpttos, data, **kwargs)
         Storage.storeMsg(peer, mailfrom, rcpttos, data, **kwargs)
         return
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
-        t = Thread(target=self.process_message_thread, args=(peer, mailfrom, rcpttos, data,))
+        t = Thread(
+            target=self.process_message_thread,
+            args=(peer, mailfrom, rcpttos, data,)
+        )
         t.start()
-
 
     def handle_accept(self):
         conn, addr = self.accept()
@@ -32,7 +34,7 @@ class LMTPServer(SMTPServer):
 
 
 def runServer():
-    lmtpServer = LMTPServer(('localhost', 10025), None)
+    lmtpServer = LMTPServer((Config.getBind(), Config.getPort()), None)
     asyncore.loop()
 
     return lmtpServer

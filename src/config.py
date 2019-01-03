@@ -6,6 +6,8 @@ class Config:
     __runUser = "cf"
     __runGrp = "cf"
     __lockFileDir = '/tmp/lmtp-server'
+    __bind = "127.0.0.1"
+    __port = 10025
 
 
     @staticmethod
@@ -31,3 +33,11 @@ class Config:
     @staticmethod
     def getLockFileDir():
         return Config.__lockFileDir
+
+    @staticmethod
+    def getBind():
+        return Config.__bind
+
+    @staticmethod
+    def getPort():
+        return Config.__port

@@ -9,14 +9,11 @@ from testlib import Testlib
 
 class Test1(unittest.TestCase):
 
-    def test_genMails(self):
-        count = 10
-        res = True
-        for i in range(count):
-            u = "joe.test."+str(i)+"@example.com"
-            Testlib.sendMail(u)
-
-        self.assertTrue(res)
+    def test_readMail(self):
+        user = "joe.test.0@example.com"
+        posts = Testlib.getPosts()
+        for post in posts.find({"X-Original-To": user}):
+            print(post)
 
 
 if __name__ == '__main__':
