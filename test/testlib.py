@@ -43,3 +43,6 @@ class Testlib:
         text = msg.as_string()
 
         server.sendmail(fromaddr, toaddr, text)
+
+        server.close()
+        
