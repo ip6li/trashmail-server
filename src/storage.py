@@ -1,12 +1,13 @@
+import sys
 import email
 import time
 import json
 import hashlib
 from storage_mongodb import Mongo
+from logger import Logger
 
 
 class Storage:
-    redis = None
 
     @staticmethod
     def printMsg(peer, mailfrom, rcpttos, data, **kwargs):
@@ -25,6 +26,7 @@ class Storage:
         if field in parser:
             key = parser[field]
         else:
+            Logger.warn("No X-Original-To, discarding mail")
             return False
 
         timestamp = int(time.time())

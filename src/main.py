@@ -8,14 +8,14 @@ import pwd
 import grp
 import signal
 import threading
-import logging.handlers
 import lmtp
 from config import Config
 from server import Server
+from logger import Logger
 
 
 DEBUG = True
-# DEBUG = False
+#DEBUG = False
 
 runUser = Config.getRunUser()
 runGrp = Config.getRunGrp()
@@ -27,19 +27,14 @@ cadmUid = pwd.getpwnam(runUser).pw_uid
 cadmHome = pwd.getpwnam(runUser).pw_dir
 cadmGid = grp.getgrnam(runGrp).gr_gid
 
-syslog = logging.getLogger('webservice.server')
-syslog.setLevel(logging.DEBUG)
-handler = logging.handlers.SysLogHandler(address='/dev/log')
-formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
-handler.setFormatter(formatter)
-syslog.addHandler(handler)
+Logger.init()
 
 
 def delpid():
     try:
         os.remove(lockFileName)
     except OSError as err:
-        syslog.info('someone already deleted ' + lockFileName + ": " + err.strerror)
+        Logger.info('someone already deleted ' + lockFileName + ": " + err.strerror)
 
 
 def sigterm_handler(signum, frame):
@@ -48,7 +43,7 @@ def sigterm_handler(signum, frame):
     if Server.getThreadLock() is not None:
         Server.getThreadLock().release()
 
-    syslog.info('webservice.server shutdown')
+    Logger.info('webservice.server shutdown')
     sys.exit()
 
 
@@ -56,13 +51,12 @@ def sigint_handler(signum, frame):
     if Server.getServer() is not None:
         Server.getServer().close()
 
-    syslog.info('webservice.server shutdown')
+    Logger.info(Config.getAppName() + ' shutdown')
     sys.exit()
 
 
 def initial_program_setup_user():
-    global syslog
-    syslog.info('webservice.server startup')
+    Logger.info(Config.getAppName() + ' startup')
 
 
 def initial_program_setup_root():
@@ -84,7 +78,7 @@ def initial_program_setup_root():
 
 
 def reload():
-    syslog.info('webservice.server reload')
+    Logger.info('webservice.server reload')
 
 
 def do_main_program():
@@ -107,7 +101,7 @@ def do_main_daemon():
     try:
         pid = os.fork()
         if pid > 0:
-            syslog.info("first fork daemon")
+            Logger.info("first fork daemon")
             # exit first parent
             sys.exit(0)
     except OSError as err:
@@ -122,7 +116,7 @@ def do_main_daemon():
         pid = os.fork()
         if pid > 0:
             # exit from second parent
-            syslog.info("second fork daemon")
+            Logger.info("second fork daemon")
             sys.exit(0)
     except OSError as err:
         sys.stderr.write('fork #2 failed: {0}\n'.format(err))
