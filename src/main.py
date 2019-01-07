@@ -3,7 +3,6 @@
 
 import os
 import sys
-import atexit
 import pwd
 import grp
 import signal
@@ -12,22 +11,6 @@ import lmtp
 from config import Config
 from server import Server
 from logger import Logger
-
-
-DEBUG = True
-#DEBUG = False
-
-runUser = Config.getRunUser()
-runGrp = Config.getRunGrp()
-
-lockFileDir = Config.getLockFileDir()
-lockFileName = lockFileDir + '/server.pid'
-
-cadmUid = pwd.getpwnam(runUser).pw_uid
-cadmHome = pwd.getpwnam(runUser).pw_dir
-cadmGid = grp.getgrnam(runGrp).gr_gid
-
-Logger.init()
 
 
 def delpid():
@@ -51,12 +34,12 @@ def sigint_handler(signum, frame):
     if Server.getServer() is not None:
         Server.getServer().close()
 
-    Logger.info(Config.getAppName() + ' shutdown')
+    Logger.info(Logger.getAppName() + ' shutdown')
     sys.exit()
 
 
 def initial_program_setup_user():
-    Logger.info(Config.getAppName() + ' startup')
+    Logger.info(Logger.getAppName() + ' startup')
 
 
 def initial_program_setup_root():
@@ -70,8 +53,10 @@ def initial_program_setup_root():
     try:
         os.mkdir(lockFileDir)
         os.chown(lockFileDir, cadmUid, cadmGid)
+    except FileExistsError:
+        Logger.info(lockFileDir + " already exists")
     except OSError as err:
-        print("cannot mkdir " + lockFileName + " {0}\n)".format(err))
+        print("cannot mkdir " + lockFileDir + " {0}\n)".format(err))
 
     signal.signal(signal.SIGTERM, sigterm_handler)
     signal.signal(signal.SIGINT, sigint_handler)
@@ -86,70 +71,24 @@ def do_main_program():
     Server.setServer(lmtp.runServer())
 
 
-def do_main_daemon():
-    try:
-        with open(lockFileName, 'r') as pf:
-            pid = int(pf.read().strip())
-    except IOError:
-        pid = None
+Config.loadConfig()
+runUser = Config.getRunUser()
+runGrp = Config.getRunGrp()
 
-    if pid:
-        message = "pidfile {0} already exist. Daemon already running?\n"
-        sys.stderr.write(message.format(lockFileName))
-        sys.exit(1)
+lockFileDir = Config.getLockFileDir()
+lockFileName = lockFileDir + '/server.pid'
 
-    try:
-        pid = os.fork()
-        if pid > 0:
-            Logger.info("first fork daemon")
-            # exit first parent
-            sys.exit(0)
-    except OSError as err:
-        sys.stderr.write('fork #1 failed: {0}\n'.format(err))
-        sys.exit(1)
+pidFile = open(lockFileName, "w", encoding="utf-8")
+pidFile.write(str(os.getpid()))
+pidFile.close()
 
-    os.chdir("/")
-    os.setsid()
-    os.umask(0)
+cadmUid = pwd.getpwnam(runUser).pw_uid
+cadmHome = pwd.getpwnam(runUser).pw_dir
+cadmGid = grp.getgrnam(runGrp).gr_gid
 
-    try:
-        pid = os.fork()
-        if pid > 0:
-            # exit from second parent
-            Logger.info("second fork daemon")
-            sys.exit(0)
-    except OSError as err:
-        sys.stderr.write('fork #2 failed: {0}\n'.format(err))
-        sys.exit(1)
-
-    # redirect standard file descriptors
-    sys.stdout.flush()
-    sys.stderr.flush()
-    si = open(os.devnull, 'r')
-    so = open(os.devnull, 'a+')
-    se = open(os.devnull, 'a+')
-
-    os.dup2(si.fileno(), sys.stdin.fileno())
-    os.dup2(so.fileno(), sys.stdout.fileno())
-    os.dup2(se.fileno(), sys.stderr.fileno())
-
-    atexit.register(delpid)
-
-    pid = str(os.getpid())
-    try:
-        with open(lockFileName, 'w+') as f:
-            f.write(pid + '\n')
-    except:
-        sys.stderr.write('cannot open pid file')
-        sys.exit(1)
-
-    do_main_program()
-
+Logger.init()
 
 initial_program_setup_root()
 initial_program_setup_user()
 
-if (DEBUG):
-    do_main_program()
-else:
-    do_main_daemon()
+do_main_program()

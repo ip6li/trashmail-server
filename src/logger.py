@@ -1,12 +1,13 @@
 import logging.handlers
-from config import Config
 
 
 class Logger:
 
+    __appname = "lmtp-server"
+
     @staticmethod
     def init():
-        syslog = logging.getLogger(Config.getAppName())
+        syslog = logging.getLogger(Logger.__appname)
         syslog.setLevel(logging.DEBUG)
         logging.basicConfig(format='%(name)s: %(levelname)s %(message)s', level=logging.DEBUG)
 
@@ -35,3 +36,6 @@ class Logger:
     def crit(msg):
         logging.critical(msg)
 
+    @staticmethod
+    def getAppName():
+        return Logger.__appname
