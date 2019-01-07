@@ -1,10 +1,10 @@
-import sys
 import email
 import time
 import json
 import hashlib
 from storage_mongodb import Mongo
 from logger import Logger
+from parser import MailParser
 
 
 class Storage:
@@ -20,14 +20,23 @@ class Storage:
         return
 
     @staticmethod
+    def __getTo(headers):
+        to = headers["to"]
+        if to is not None:
+            return to
+        to = headers["cc"]
+        if to is not None:
+            return to
+        to = headers["X-Original-To"]
+        if to is not None:
+            return to
+        Logger.warn("No X-Original-To, discarding mail")
+        return None
+
+    @staticmethod
     def storeMsg(peer, mailfrom, rcpttos, data, **kwargs):
-        parser = email.message_from_bytes(data)
-        field = "X-Original-To"
-        if field in parser:
-            key = parser[field]
-        else:
-            Logger.warn("No X-Original-To, discarding mail")
-            return False
+        headers = MailParser.parseMail(data)
+        key = Storage.__getTo(headers)
 
         timestamp = int(time.time())
         m = hashlib.sha256()
@@ -40,8 +49,9 @@ class Storage:
             "mailPeer": peer,
             "mailFrom": mailfrom,
             "mailTo": rcpttos,
+            "headers": headers.as_string(True),
             "data": data.decode('utf8').replace("'", '"'),
-            "headers": kwargs
+            "kwargs": kwargs
         }
 
         res = Mongo.insert(msg)

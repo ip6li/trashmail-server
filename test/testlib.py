@@ -26,12 +26,11 @@ class Testlib:
     @staticmethod
     def sendMail(u):
         fromaddr = "source@example.org"
-        toaddr = "target@example.com"
         msg = MIMEMultipart()
         msg['From'] = fromaddr
-        msg['To'] = toaddr
+        msg['To'] = u
         msg['Subject'] = "Python email"
-        msg['X-Original-To'] = u
+        #msg['X-Original-To'] = u
 
         bodyPlain = "Python test mail"
         bodyHtml = "<html><body>Python html mail</body></html>"
@@ -42,7 +41,7 @@ class Testlib:
         server.ehlo()
         text = msg.as_string()
 
-        server.sendmail(fromaddr, toaddr, text)
+        server.sendmail(fromaddr, u, text)
 
         server.close()
         
