@@ -34,6 +34,7 @@ class LMTPServer(SMTPServer):
 
 
 def runServer():
+    print ("getBind(): " + Config.getBind())
     lmtpServer = LMTPServer((Config.getBind(), Config.getPort()), None)
     asyncore.loop()
 

@@ -71,7 +71,6 @@ def do_main_program():
     Server.setServer(lmtp.runServer())
 
 
-Config.loadConfig()
 runUser = Config.getRunUser()
 runGrp = Config.getRunGrp()
 

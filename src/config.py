@@ -6,14 +6,15 @@ import os
 
 
 class Config:
-    __mongo_url = 'mongodb://127.0.0.1:27017/'
-    __db = 'trashmail-lmtp'
-    __max_age = 60
     __runUser = getpass.getuser()
     __runGrp = grp.getgrnam(__runUser).gr_name
-    __lockFileDir = '/tmp/lmtp-server'
-    __bind = "127.0.0.1"
-    __port = 10025
+    __config = None
+
+    @staticmethod
+    def __getItem(s):
+        if Config.__config is None:
+            Config.initConfig()
+        return Config.__config["DEFAULT"][s]
 
     @staticmethod
     def createConfig(filename, config):
@@ -21,9 +22,14 @@ class Config:
             config.write(configfile)
 
     @staticmethod
-    def loadConfig():
+    def initConfig():
+        Config.__config = Config.__loadConfig()
+        print("==> " + Config.__getItem("mongo_url"))
+
+    @staticmethod
+    def __loadConfig():
         config = configparser.ConfigParser()
-        config['DEFAULT'] = {
+        config["DEFAULT"] = {
             'mongo_url': 'mongodb://127.0.0.1:27017/',
             'mongo_db': 'trashmail-lmtp',
             'max_age': 60,
@@ -42,17 +48,19 @@ class Config:
             for i in config[section]:
                 print(i + ": " + config[section][i])
 
+        return config
+
     @staticmethod
     def getMongoURL():
-        return Config.__mongo_url
+        return Config.__getItem("mongo_url")
 
     @staticmethod
     def getDB():
-        return Config.__db
+        return Config.__getItem("mongo_db")
 
     @staticmethod
     def getMaxAge():
-        return Config.__max_age
+        return Config.__getItem("max_age")
 
     @staticmethod
     def getRunUser():
@@ -64,12 +72,12 @@ class Config:
 
     @staticmethod
     def getLockFileDir():
-        return Config.__lockFileDir
+        return Config.__getItem("lockFileDir")
 
     @staticmethod
     def getBind():
-        return Config.__bind
+        return Config.__getItem("bind")
 
     @staticmethod
     def getPort():
-        return Config.__port
+        return int(Config.__getItem("port"))

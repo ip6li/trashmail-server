@@ -43,7 +43,6 @@ class Storage:
         m.update(str(timestamp).encode("utf8"))
         m.update(key.encode("utf8"))
         msg = {
-            "id": m.hexdigest().encode("utf8"),
             "X-Original-To": key,
             "timestamp": timestamp,
             "mailPeer": peer,
