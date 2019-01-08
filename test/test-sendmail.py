@@ -14,7 +14,7 @@ class Test1(unittest.TestCase):
         count = 1
         res = True
         for i in range(count):
-            u = "Joe Test <joe.test.to@example.com>"
+            u = "Joe Test To <joe.test@example.com>"
             smtp.sendMail(u, None, None)
         del smtp
         self.assertTrue(res)
@@ -24,7 +24,7 @@ class Test1(unittest.TestCase):
         count = 1
         res = True
         for i in range(count):
-            u = "Joe Test <joe.test.cc@example.com>"
+            u = "Joe Test CC <joe.test@example.com>"
             smtp.sendMail(None, u, None)
         del smtp
         self.assertTrue(res)
@@ -34,7 +34,7 @@ class Test1(unittest.TestCase):
         count = 1
         res = True
         for i in range(count):
-            u = "Joe Test <joe.test.bcc@example.com>"
+            u = "Joe Test BCC <joe.test@example.com>"
             smtp.sendMail(None, None, u)
         del smtp
         self.assertTrue(res)
@@ -44,7 +44,7 @@ class Test1(unittest.TestCase):
         count = 1
         res = True
         for i in range(count):
-            u = ["Joe Test <joe.test.to@example.com>", "Some Other User <some.other.user@exmaple.org>"]
+            u = ["Joe Test Multiple <joe.test@example.com>", "Some Other User <some.other.user@exmaple.org>"]
             smtp.sendMail(u, None, None)
         del smtp
         self.assertTrue(res)

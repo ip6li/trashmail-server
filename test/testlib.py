@@ -6,6 +6,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
 from config import Config
+import time
+from datetime import date
 
 
 class Testlib:
@@ -51,6 +53,7 @@ class Testlib:
 
         print(smtp_to)
 
+        msg['Date'] = time.asctime( time.localtime(time.time()))
         msg['Subject'] = "Python email"
 
         bodyPlain = "Python test mail"
