@@ -22,15 +22,15 @@ class LMTPServer(SMTPServer):
             Logger.crit("Cannot init LMTP server: " + str(err))
             sys.exit(1)
 
-    def process_message_thread(self, peer, mailfrom, rcpttos, data, **kwargs):
+    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         Logger.debug("processing message")
         Storage.storeMsg(peer, mailfrom, rcpttos, data, **kwargs)
         return
 
-    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
+    def process_message_(self, peer, mailfrom, rcpttos, data, **kwargs):
         try:
             t = Thread(
-                target=self.process_message_thread,
+                target=self.process_message,
                 args=(peer, mailfrom, rcpttos, data,)
             )
             t.start()

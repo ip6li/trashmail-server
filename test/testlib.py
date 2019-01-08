@@ -23,14 +23,35 @@ class Testlib:
         for post in posts.find(query):
             print(post)
 
-    @staticmethod
-    def sendMail(u):
+    def sendMail(self, to, cc, bcc):
         fromaddr = "source@example.org"
         msg = MIMEMultipart()
         msg['From'] = fromaddr
-        msg['To'] = u
+        smtp_to = None
+        if to is not None:
+            print ("type: ", type(to))
+            if type(to) is list:
+                s = ",".join(to)
+            else:
+                s = to
+            msg['To'] = s
+            print("msg{to]: " + msg['To'])
+            smtp_to = to
+        if cc is not None:
+            msg['CC'] = cc
+            if smtp_to is None:
+                smtp_to = cc
+        if bcc is not None and smtp_to is None:
+            msg['To'] = "undisclosed recipients"
+            smtp_to = bcc
+
+        if to is None and cc is None and bcc is None:
+            print("no recipients set, aborting")
+            sys.exit(1)
+
+        print(smtp_to)
+
         msg['Subject'] = "Python email"
-        #msg['X-Original-To'] = u
 
         bodyPlain = "Python test mail"
         bodyHtml = "<html><body>Python html mail</body></html>"
@@ -41,7 +62,7 @@ class Testlib:
         server.ehlo()
         text = msg.as_string()
 
-        server.sendmail(fromaddr, u, text)
+        server.sendmail(fromaddr, smtp_to, text)
 
         server.close()
         
