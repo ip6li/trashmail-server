@@ -77,6 +77,8 @@ runGrp = Config.getRunGrp()
 lockFileDir = Config.getLockFileDir()
 lockFileName = lockFileDir + '/server.pid'
 
+if not os.path.isdir(lockFileDir):
+    os.mkdir(lockFileDir)
 pidFile = open(lockFileName, "w", encoding="utf-8")
 pidFile.write(str(os.getpid()))
 pidFile.close()

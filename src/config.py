@@ -3,6 +3,7 @@ import pwd
 import grp
 import getpass
 import os
+import sys
 
 
 class Config:
@@ -24,7 +25,6 @@ class Config:
     @staticmethod
     def initConfig():
         Config.__config = Config.__loadConfig()
-        print("==> " + Config.__getItem("mongo_url"))
 
     @staticmethod
     def __loadConfig():
@@ -46,7 +46,7 @@ class Config:
 
         for section in config:
             for i in config[section]:
-                print(i + ": " + config[section][i])
+                sys.stderr.write(i + ": " + config[section][i] + "\n")
 
         return config
 
