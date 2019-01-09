@@ -27,17 +27,12 @@ class Storage:
     @staticmethod
     def storeMsg(peer, mailfrom, rcpttos, data, **kwargs):
         headers = MailParser.parseMail(data)
-        if headers["X-Original-To"] is not None:
-            key = headers["X-Original-To"]
-            Logger.debug("X-Original-To found")
-        else:
-            key = rcpttos
-            Logger.debug("X-Original-To not found")
+        key = rcpttos
+        Logger.debug("X-Original-To not found")
         print("key: ", key)
         try:
             timestamp = int(time.time())
             msg = {
-                "X-Original-To": key,
                 "timestamp": timestamp,
                 "mailPeer": peer,
                 "mailFrom": mailfrom,
