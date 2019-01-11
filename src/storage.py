@@ -1,9 +1,6 @@
 import time
 import json
-import hashlib
-import re
 from storage_mongodb import Mongo
-from logger import Logger
 from parser import MailParser
 from email.utils import parseaddr
 
@@ -27,16 +24,17 @@ class Storage:
     @staticmethod
     def storeMsg(peer, mailfrom, rcpttos, data, **kwargs):
         headers = MailParser.parseMail(data)
-        key = rcpttos
-        Logger.debug("X-Original-To not found")
-        print("key: ", key)
+        lowerRcptTos = []
+        for rcpt in rcpttos:
+            rcpt = rcpt.lower()
+            lowerRcptTos.append(rcpt)
         try:
             timestamp = int(time.time())
             msg = {
                 "timestamp": timestamp,
                 "mailPeer": peer,
                 "mailFrom": mailfrom,
-                "mailTo": rcpttos,
+                "mailTo": lowerRcptTos,
                 "headers": headers.as_string(True),
                 "data": data.decode('utf8').replace("'", '"'),
                 "kwargs": kwargs

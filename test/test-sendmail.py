@@ -49,6 +49,16 @@ class Test1(unittest.TestCase):
         del smtp
         self.assertTrue(res)
 
+    def test_genMails_5(self):
+        smtp = Testlib()
+        count = 1
+        res = True
+        for i in range(count):
+            u = ["Joe Test Uppercase <Joe.Test@example.com>"]
+            smtp.sendMail(u, None, None)
+        del smtp
+        self.assertTrue(res)
+
 
 if __name__ == '__main__':
     unittest.main()
