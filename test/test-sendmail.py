@@ -44,7 +44,7 @@ class Test1(unittest.TestCase):
         count = 1
         res = True
         for i in range(count):
-            u = ["Joe Test Multiple <joe.test@example.com>", "Some Other User <some.other.user@exmaple.org>"]
+            u = ["Joe Test Multiple <joe.test@example.com>", "Some Other User <some.other.user@example.org>"]
             smtp.sendMail(u, None, None)
         del smtp
         self.assertTrue(res)

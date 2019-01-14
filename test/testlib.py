@@ -27,7 +27,7 @@ class Testlib:
 
     def sendMail(self, to, cc, bcc):
         fromaddr = "source@example.org"
-        msg = MIMEMultipart()
+        msg = MIMEMultipart('alternative')
         msg['From'] = fromaddr
         smtp_to = None
         if to is not None:
