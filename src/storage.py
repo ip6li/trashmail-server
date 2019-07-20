@@ -9,13 +9,12 @@ from logger import Logger
 class Storage:
 
     @staticmethod
-    def print_msg(peer, mailfrom, rcpttos, data, **kwargs):
+    def print_msg(peer, mailfrom, rcpttos, data):
         print('Receiving message from:', peer)
         print('Message addressed from:', mailfrom)
         print('Message addressed to  :', rcpttos)
         print('Message length        :', len(data))
         print('Message               :', data)
-        print("kwargs                :", kwargs)
         return
 
     def extract_rfc822(self, src):
@@ -42,6 +41,7 @@ class Storage:
 
         timestamp = int(time.time())
         try:
+            Logger.debug("begin parsing message")
             msg = {
                 "timestamp": timestamp,
                 "mailPeer": peer,
@@ -50,13 +50,16 @@ class Storage:
                 "headers": self.__decode_headers(headers),
                 "data": self.__decode_msg(data),
             }
+            Logger.debug("end parsing message")
         except Exception as err:
             Logger.crit("Storage::store_msg: Cannot encode message to JSON object: " + str(err))
             raise err
         try:
+            Logger.debug("begin store message")
             client = Mongo()
             post_id = client.insert(msg)
             Logger.debug("Storage::store_msg: Saved message with post_id "+str(post_id))
+            Logger.debug("end store message")
             return True
         except Exception as err:
             Logger.warn("Storage::store_msg: Cannot write message to database: " + str(err))

@@ -4,6 +4,7 @@ from logger import Logger
 import time
 from msg_handler import MsgHandler
 from lmtp_controller import LMTPController
+from smtplib import LMTP
 
 
 class LMTPServerRunner:
@@ -23,7 +24,14 @@ class LMTPServerRunner:
 
     @staticmethod
     def check_lmtp_server():
+        wait_time = 60
         while True:
-            print("alive")
-            time.sleep(300)
-            # should be improved by monitoring functions
+            Logger.debug("wait alive for " + str(wait_time) + "s")
+            time.sleep(wait_time)
+            with LMTP(host="127.0.0.1", port=10025) as smtp:
+                try:
+                    smtp.noop()
+                    Logger.debug("alive")
+                except Exception as err:
+                    Logger.crit("LMTPServerRunner::check_lmtp_server: Server is dead" + str(err))
+                    sys.exit(1)

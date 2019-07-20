@@ -67,8 +67,6 @@ def reload():
 
 def do_main_program():
     LMTPServerRunner()
-    #Server.setThreadLock(threading.Lock())
-    #Server.setServer(lmtp.runServer())
 
 
 runUser = Config.getRunUser()
