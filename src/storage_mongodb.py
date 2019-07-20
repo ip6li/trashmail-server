@@ -5,19 +5,23 @@ from logger import Logger
 
 
 class Mongo:
-    __client = MongoClient(Config.getMongoURL())
-    __db = __client[Config.getDB()]
 
-    @staticmethod
-    def insert (data):
+    def __init__(self):
+        self.__client = MongoClient(Config.getMongoURL())
+        self.__db = self.__client[Config.getDB()]
+
+    def insert(self, data):
         from pymongo.errors import ServerSelectionTimeoutError
         try:
-            posts = Mongo.__db.posts
+            posts = self.__db.posts
             post_id = posts.insert_one(data).inserted_id
             return post_id
         except ServerSelectionTimeoutError as err:
             Logger.warn("Cannot connect to MongoDB server: " + str(err))
+            raise err
         except errors as err:
             Logger.warn("MongoDB failed: " + str(err))
+            raise err
 
-        return None
+    def __del__(self):
+        self.__client.close()

@@ -3,12 +3,13 @@ import json
 from storage_mongodb import Mongo
 from parser import MailParser
 from email.utils import parseaddr
+from logger import Logger
 
 
 class Storage:
 
     @staticmethod
-    def printMsg(peer, mailfrom, rcpttos, data, **kwargs):
+    def print_msg(peer, mailfrom, rcpttos, data, **kwargs):
         print('Receiving message from:', peer)
         print('Message addressed from:', mailfrom)
         print('Message addressed to  :', rcpttos)
@@ -17,37 +18,39 @@ class Storage:
         print("kwargs                :", kwargs)
         return
 
-    @staticmethod
-    def extractRFC822(src):
+    def extract_rfc822(self, src):
         return parseaddr(src)[1]
 
-    @staticmethod
-    def storeMsg(peer, mailfrom, rcpttos, data, **kwargs):
+    def store_msg(self, peer, mailfrom, rcpttos, data, **kwargs):
         headers = MailParser.parseMail(data)
-        lowerRcptTos = []
+        lower_rcpt_tos = []
         for rcpt in rcpttos:
             rcpt = rcpt.lower()
-            lowerRcptTos.append(rcpt)
+            lower_rcpt_tos.append(rcpt)
+
+        timestamp = int(time.time())
         try:
-            timestamp = int(time.time())
             msg = {
                 "timestamp": timestamp,
                 "mailPeer": peer,
                 "mailFrom": mailfrom,
-                "mailTo": lowerRcptTos,
+                "mailTo": lower_rcpt_tos,
                 "headers": headers.as_string(True),
                 "data": data.decode('utf8').replace("'", '"'),
                 "kwargs": kwargs
             }
-
-            res = Mongo.insert(msg)
-            if res is not None:
-                return True
-            else:
-                return False
         except Exception as err:
-            print(err)
+            Logger.crit("Cannot encode message to JSON object: " + str(err))
+            raise err
+        try:
+            client = Mongo()
+            post_id = client.insert(msg)
+            Logger.debug("Saved message with post_id "+str(post_id))
+            return True
+        except Exception as err:
+            Logger.warn("Cannot write message to database: " + str(err))
+            raise err
 
-    @staticmethod
-    def toJson(data):
+    def to_json(self, data):
         return json.dumps(data)
+

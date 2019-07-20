@@ -15,6 +15,7 @@ class LMTPChannel(SMTPChannel):
 
 
 class LMTPServer(SMTPServer):
+
     def __init__(self, localaddr, remoteaddr):
         try:
             SMTPServer.__init__(self, localaddr, remoteaddr)
@@ -24,14 +25,18 @@ class LMTPServer(SMTPServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         Logger.debug("processing message")
-        Storage.storeMsg(peer, mailfrom, rcpttos, data, **kwargs)
+        try:
+            storage = Storage()
+            storage.store_msg(peer, mailfrom, rcpttos, data, **kwargs)
+        except Exception as err:
+            Logger.warn("Cannot write message to database: " + str(err))
         return
 
     def process_message_(self, peer, mailfrom, rcpttos, data, **kwargs):
         try:
             t = Thread(
                 target=self.process_message,
-                args=(peer, mailfrom, rcpttos, data,)
+                args=(peer, mailfrom, rcpttos, data, kwargs)
             )
             t.start()
         except Exception as err:
