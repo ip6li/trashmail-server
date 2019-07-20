@@ -33,7 +33,7 @@ class Storage:
         except Exception as err:
             Logger.crit("Storage::__decode_msg: " + str(err))
 
-    def store_msg(self, peer, mailfrom, rcpttos, data, **kwargs):
+    def store_msg(self, peer, mailfrom, rcpttos, data):
         headers = MailParser.parseMail(data)
         lower_rcpt_tos = []
         for rcpt in rcpttos:
@@ -49,7 +49,6 @@ class Storage:
                 "mailTo": lower_rcpt_tos,
                 "headers": self.__decode_headers(headers),
                 "data": self.__decode_msg(data),
-                "kwargs": kwargs
             }
         except Exception as err:
             Logger.crit("Storage::store_msg: Cannot encode message to JSON object: " + str(err))

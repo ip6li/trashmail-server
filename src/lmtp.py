@@ -1,60 +1,29 @@
-from smtpd import SMTPChannel, SMTPServer
-import asyncore
 import sys
-from threading import Thread
-from server import Server
-from storage import Storage
 from config import Config
 from logger import Logger
+import time
+from msg_handler import MsgHandler
+from lmtp_controller import LMTPController
 
 
-class LMTPChannel(SMTPChannel):
-    # LMTP "LHLO" command is routed to the SMTP/ESMTP command
-    def smtp_LHLO(self, arg):
-        self.smtp_HELO(arg)
-
-
-class LMTPServer(SMTPServer):
-
-    def __init__(self, localaddr, remoteaddr):
+class LMTPServerRunner:
+    def __init__(self):
         try:
-            SMTPServer.__init__(self, localaddr, remoteaddr)
+            Logger.info("firing up lmtp server")
+            handler = MsgHandler()
+            controller = LMTPController(handler, hostname=Config.getBind(), port=Config.getPort())
+            # Run the event loop in a separate thread.
+            controller.start()
+            # Run forever
+            self.check_lmtp_server()
+            controller.stop()
         except Exception as err:
-            Logger.crit("LMTPServer::__init__Cannot init LMTP server: " + str(err))
+            Logger.crit("LMTPServerRunner::__init__Cannot init LMTP server: " + str(err))
             sys.exit(1)
 
-    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
-        Logger.debug("processing message")
-        try:
-            storage = Storage()
-            storage.store_msg(peer, mailfrom, rcpttos, data, **kwargs)
-        except Exception as err:
-            Logger.warn("LMTPServer::process_message: Cannot write message to database: " + str(err))
-            sys.exit(1)
-        return
-
-    def process_message_(self, peer, mailfrom, rcpttos, data, **kwargs):
-        try:
-            t = Thread(
-                target=self.process_message,
-                args=(peer, mailfrom, rcpttos, data, kwargs)
-            )
-            t.start()
-        except Exception as err:
-            Logger.warn("LMTPServer::process_message_: Cannot start thread in process_message: " + str(err))
-
-    def handle_accept(self):
-        conn, addr = self.accept()
-        channel = LMTPChannel(self, conn, addr)
-        Server.setChannel(channel)
-
-
-def runServer():
-    try:
-        lmtpServer = LMTPServer((Config.getBind(), Config.getPort()), None)
-        asyncore.loop()
-    except Exception as err:
-        Logger.crit("LMTPServer::runServer: Cannot start LMTP server: " + str(err))
-        sys.exit(1)
-
-    return lmtpServer
+    @staticmethod
+    def check_lmtp_server():
+        while True:
+            print("alive")
+            time.sleep(300)
+            # should be improved by monitoring functions

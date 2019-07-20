@@ -6,11 +6,10 @@ import sys
 import pwd
 import grp
 import signal
-import threading
-import lmtp
 from config import Config
 from server import Server
 from logger import Logger
+from lmtp import LMTPServerRunner
 
 
 def delpid():
@@ -67,8 +66,9 @@ def reload():
 
 
 def do_main_program():
-    Server.setThreadLock(threading.Lock())
-    Server.setServer(lmtp.runServer())
+    LMTPServerRunner()
+    #Server.setThreadLock(threading.Lock())
+    #Server.setServer(lmtp.runServer())
 
 
 runUser = Config.getRunUser()
