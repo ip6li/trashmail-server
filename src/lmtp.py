@@ -20,7 +20,7 @@ class LMTPServer(SMTPServer):
         try:
             SMTPServer.__init__(self, localaddr, remoteaddr)
         except Exception as err:
-            Logger.crit("Cannot init LMTP server: " + str(err))
+            Logger.crit("LMTPServer::__init__Cannot init LMTP server: " + str(err))
             sys.exit(1)
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
@@ -29,7 +29,8 @@ class LMTPServer(SMTPServer):
             storage = Storage()
             storage.store_msg(peer, mailfrom, rcpttos, data, **kwargs)
         except Exception as err:
-            Logger.warn("Cannot write message to database: " + str(err))
+            Logger.warn("LMTPServer::process_message: Cannot write message to database: " + str(err))
+            sys.exit(1)
         return
 
     def process_message_(self, peer, mailfrom, rcpttos, data, **kwargs):
@@ -40,7 +41,7 @@ class LMTPServer(SMTPServer):
             )
             t.start()
         except Exception as err:
-            Logger.warn("Cannot start thread in process_message: " + str(err))
+            Logger.warn("LMTPServer::process_message_: Cannot start thread in process_message: " + str(err))
 
     def handle_accept(self):
         conn, addr = self.accept()
@@ -53,7 +54,7 @@ def runServer():
         lmtpServer = LMTPServer((Config.getBind(), Config.getPort()), None)
         asyncore.loop()
     except Exception as err:
-        Logger.crit("Cannot start LMTP server: " + str(err))
+        Logger.crit("LMTPServer::runServer: Cannot start LMTP server: " + str(err))
         sys.exit(1)
 
     return lmtpServer
