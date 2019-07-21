@@ -4,6 +4,7 @@ import grp
 import getpass
 import os
 import sys
+import logging
 
 
 class Config:
@@ -36,7 +37,8 @@ class Config:
             'lockFileDir': '/tmp/lmtp-server',
             'bind': '127.0.0.1',
             'port': 10025,
-            'timeout': 10000
+            'timeout': 10000,
+            'loglevel': logging.DEBUG
         }
         config_file = pwd.getpwnam(Config.__runUser).pw_dir + "/.trashmail/lmtp-server.ini"
         if os.path.isfile(config_file):
@@ -86,3 +88,7 @@ class Config:
     @staticmethod
     def getTimeout():
         return int(Config.__getItem("timeout"))
+
+    @staticmethod
+    def getLoglevel():
+        return int(Config.__getItem("loglevel"))

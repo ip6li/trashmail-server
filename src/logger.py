@@ -1,4 +1,5 @@
 import logging.handlers
+from config import Config
 
 
 class Logger:
@@ -8,10 +9,10 @@ class Logger:
     @staticmethod
     def init():
         syslog = logging.getLogger(Logger.__appname)
-        syslog.setLevel(logging.DEBUG)
+        syslog.setLevel(Config.getLoglevel())
         logging.basicConfig(
             format='%(name)s: %(levelname)s %(message)s',
-            level=logging.DEBUG
+            level=Config.getLoglevel()
         )
 
     @staticmethod

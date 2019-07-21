@@ -18,7 +18,7 @@ class Check:
 
     @staticmethod
     def __check_lmtp_server():
-        with LMTP(host="127.0.0.1", port=10025) as lmtp:
+        with LMTP(host=Config.getBind(), port=Config.getPort()) as lmtp:
             try:
                 lmtp.noop()
                 Logger.debug("alive")
