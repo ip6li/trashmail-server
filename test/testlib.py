@@ -7,7 +7,6 @@ from email.mime.text import MIMEText
 import smtplib
 from config import Config
 import time
-from datetime import date
 
 
 class Testlib:

@@ -7,7 +7,7 @@ from logger import Logger
 class Mongo:
 
     def __init__(self):
-        self.__client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=10000)
+        self.__client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
         self.__db = self.__client[Config.getDB()]
 
     def insert(self, data):
