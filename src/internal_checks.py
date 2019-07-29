@@ -1,8 +1,10 @@
 import sys
 import time
+from custom_cb import retry_auto_reconnect
 from logger import Logger
 from smtplib import LMTP
 from config import Config
+from pymongo import MongoClient
 
 
 class Check:
@@ -27,14 +29,10 @@ class Check:
                 sys.exit(1)
 
     @staticmethod
+    @retry_auto_reconnect
     def __test_mongodb():
-        from pymongo import MongoClient
-        from pymongo.errors import ConnectionFailure
-
         Logger.debug("Test MongoDB")
-        try:
-            client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
-            client.server_info()
-            client.close()
-        except ConnectionFailure as err:
-            Logger.crit("MongoDB is not available: " + str(err))
+
+        client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
+        client.server_info()
+        client.close()

@@ -59,6 +59,16 @@ class Test1(unittest.TestCase):
         del smtp
         self.assertTrue(res)
 
+    def test_genMails_6(self):
+        smtp = Testlib()
+        count = 1
+        res = True
+        for i in range(count):
+            u = ["Long Name 32 Chars <d644738e086d4da5e339bbaea6fb50e3@example.com>"]
+            smtp.sendMail(u, None, None)
+        del smtp
+        self.assertTrue(res)
+
 
 if __name__ == '__main__':
     unittest.main()
