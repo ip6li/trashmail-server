@@ -3,8 +3,7 @@ import pwd
 import grp
 import getpass
 import os
-import sys
-import logging
+from logger import Logger
 
 
 class Config:
@@ -37,8 +36,7 @@ class Config:
             'lockFileDir': '/tmp/lmtp-server',
             'bind': '127.0.0.1',
             'port': 10025,
-            'timeout': 10000,
-            'loglevel': logging.DEBUG
+            'timeout': 10000
         }
         config_file = pwd.getpwnam(Config.__runUser).pw_dir + "/.trashmail/lmtp-server.ini"
         if os.path.isfile(config_file):
@@ -47,9 +45,10 @@ class Config:
             with open(config_file, 'w') as configfile:
                 config.write(configfile)
 
+        log = Logger(__name__)
         for section in config:
             for i in config[section]:
-                sys.stderr.write(i + ": " + config[section][i] + "\n")
+                log.debug(i + ": " + config[section][i])
 
         return config
 
@@ -88,7 +87,3 @@ class Config:
     @staticmethod
     def getTimeout():
         return int(Config.__getItem("timeout"))
-
-    @staticmethod
-    def getLoglevel():
-        return int(Config.__getItem("loglevel"))

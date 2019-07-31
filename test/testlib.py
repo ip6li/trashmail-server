@@ -60,7 +60,7 @@ class Testlib:
         msg.attach(MIMEText(bodyPlain, 'plain'))
         msg.attach(MIMEText(bodyHtml, 'html'))
 
-        server = smtplib.SMTP(Config.getBind(), Config.getPort())
+        server = smtplib.LMTP(Config.getBind(), Config.getPort())
         server.ehlo()
         text = msg.as_string()
 

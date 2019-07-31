@@ -13,7 +13,8 @@ def retry(num_tries, exceptions):
                 try:
                     return func(*args, **kwargs)
                 except exceptions as err:
-                    Logger.warn("Connection failure [retry " + str(i) + "]: " + str(err))
+                    log = Logger(__name__)
+                    log.warn("Connection failure [retry " + str(i) + "]: " + str(err))
                     continue
             raise IOError("cannot connect MongoDB after " + str(num_tries) + " tries.")
 

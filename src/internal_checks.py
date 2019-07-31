@@ -11,8 +11,9 @@ class Check:
 
     @staticmethod
     def run_checks():
-        wait_time = 60
-        Logger.debug("wait alive for " + str(wait_time) + "s")
+        wait_time = 5
+        log = Logger(__name__)
+        log.debug("wait alive for " + str(wait_time) + "s")
         while True:
             time.sleep(wait_time)
             Check.__check_lmtp_server()
@@ -21,18 +22,24 @@ class Check:
     @staticmethod
     def __check_lmtp_server():
         with LMTP(host=Config.getBind(), port=Config.getPort()) as lmtp:
+            log = Logger(__name__)
             try:
-                lmtp.noop()
-                Logger.debug("alive")
+                res = lmtp.docmd("ping")
+                log.debug("lmtp server is alive: " + str(res))
             except Exception as err:
-                Logger.crit("LMTPServerRunner::check_lmtp_server: Server is dead" + str(err))
+                log.crit("LMTPServerRunner::check_lmtp_server: Server is dead" + str(err))
                 sys.exit(1)
 
     @staticmethod
     @retry_auto_reconnect
     def __test_mongodb():
-        Logger.debug("Test MongoDB")
+        log = Logger(__name__)
 
-        client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
-        client.server_info()
-        client.close()
+
+        try:
+            client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
+            res = client.server_info()
+            client.close()
+            log.debug("Test MongoDB succeeded, found version " + str(res["version"]))
+        except Exception as err:
+            raise err

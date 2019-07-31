@@ -13,6 +13,7 @@ class Mongo:
     def __init__(self):
         self.__client = MongoClient(host=Config.getMongoURL(), socketTimeoutMS=Config.getTimeout())
         self.__db = self.__client[Config.getDB()]
+        self.__log = Logger(__name__)
 
     @retry_auto_reconnect
     def insert(self, data):
@@ -22,10 +23,10 @@ class Mongo:
             post_id = posts.insert_one(data).inserted_id
             return post_id
         except ServerSelectionTimeoutError as err:
-            Logger.warn("Cannot connect to MongoDB server: " + str(err))
+            self.__log.warn("Cannot connect to MongoDB server: " + str(err))
             raise err
         except errors as err:
-            Logger.warn("MongoDB failed: " + str(err))
+            self.__log.warn("MongoDB failed: " + str(err))
             raise err
 
     def __del__(self):

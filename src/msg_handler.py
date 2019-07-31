@@ -13,6 +13,7 @@ class MsgHandler:
         # Register the signal function handler
         signal.signal(signal.SIGALRM, handler)
         self.__timeout_sec = 10
+        self.__log = Logger(__name__)
 
     async def handle_DATA(self, server, session, envelope):
         try:
@@ -22,14 +23,14 @@ class MsgHandler:
             self.store_msg(session, envelope)
             signal.alarm(0)
         except OSError as oserr:
-            Logger.crit("MsgHandler::handle_DATA: Timeout on: " + str(oserr))
+            self.__log.crit("MsgHandler::handle_DATA: Timeout on: " + str(oserr))
         except Exception as err:
-            Logger.warn("MsgHandler::handle_DATA: Failed to store message: " + str(err))
+            self.__log.warn("MsgHandler::handle_DATA: Failed to store message: " + str(err))
             return '400 Could not process your message ' + str(err)
         return '250 OK'
 
     def store_msg(self, session, envelope):
-        Logger.debug("begin store message")
+        self.__log.debug("MsgHandler::store_msg begin store message")
         storage = Storage()
         storage.store_msg(session.peer, envelope.mail_from, envelope.rcpt_tos, envelope.content)
-        Logger.debug("end store message")
+        self.__log.debug("MsgHandler::store_msg end store message")

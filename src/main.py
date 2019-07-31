@@ -12,11 +12,13 @@ from logger import Logger
 from lmtp import LMTPServerRunner
 
 
+log = Logger(__name__)
+
 def delpid():
     try:
         os.remove(lockFileName)
     except OSError as err:
-        Logger.info('someone already deleted ' + lockFileName + ": " + err.strerror)
+        log.info('someone already deleted ' + lockFileName + ": " + err.strerror)
 
 
 def sigterm_handler(signum, frame):
@@ -25,7 +27,7 @@ def sigterm_handler(signum, frame):
     if Server.getThreadLock() is not None:
         Server.getThreadLock().release()
 
-    Logger.info('webservice.server shutdown')
+    log.info('webservice.server shutdown')
     sys.exit()
 
 
@@ -33,12 +35,12 @@ def sigint_handler(signum, frame):
     if Server.getServer() is not None:
         Server.getServer().close()
 
-    Logger.info(Logger.getAppName() + ' shutdown')
+    log.info(__name__ + ' shutdown')
     sys.exit()
 
 
 def initial_program_setup_user():
-    Logger.info(Logger.getAppName() + ' startup')
+    log.info(__name__ + ' startup')
 
 
 def initial_program_setup_root():
@@ -53,7 +55,7 @@ def initial_program_setup_root():
         os.mkdir(lockFileDir)
         os.chown(lockFileDir, cadmUid, cadmGid)
     except FileExistsError:
-        Logger.info(lockFileDir + " already exists")
+        log.info(lockFileDir + " already exists")
     except OSError as err:
         print("cannot mkdir " + lockFileDir + " {0}\n)".format(err))
 
@@ -62,7 +64,7 @@ def initial_program_setup_root():
 
 
 def reload():
-    Logger.info('webservice.server reload')
+    log.info('webservice.server reload')
 
 
 def do_main_program():
@@ -84,8 +86,6 @@ pidFile.close()
 cadmUid = pwd.getpwnam(runUser).pw_uid
 cadmHome = pwd.getpwnam(runUser).pw_dir
 cadmGid = grp.getgrnam(runGrp).gr_gid
-
-Logger.init()
 
 initial_program_setup_root()
 initial_program_setup_user()
