@@ -10,8 +10,11 @@ class LMTPServerRunner:
     def __init__(self):
         log = Logger(__name__)
         log.info("firing up lmtp server")
-        handler = MsgHandler()
-        controller = LMTPController(handler, hostname=Config.getBind(), port=Config.getPort())
+        controller = LMTPController(
+            MsgHandler(),
+            hostname=Config.getBind(),
+            port=Config.getPort()
+        )
         try:
             # Run the event loop in a separate thread.
             controller.start()

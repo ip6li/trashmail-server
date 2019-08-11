@@ -4,7 +4,7 @@ from storage import Storage
 
 
 def handler(signum, frame):
-    raise OSError("function timeout: " + str(frame))
+    raise OSError("function timeout (" + str(signum) + "): " + str(frame))
 
 
 class MsgHandler:
@@ -17,17 +17,19 @@ class MsgHandler:
 
     async def handle_DATA(self, server, session, envelope):
         try:
-            # Some shit may happen on storing message, e.g. half broken MongoDB or connections
+            # Some shit may happen on storing message,
+            # e.g. half broken MongoDB or connections
             # This solution will definitely return
             signal.alarm(self.__timeout_sec)
             self.store_msg(session, envelope)
             signal.alarm(0)
+            return '250 OK'
         except OSError as oserr:
             self.__log.crit("MsgHandler::handle_DATA: Timeout on: " + str(oserr))
+            return '400 Could not process your message ' + str(oserr)
         except Exception as err:
             self.__log.warn("MsgHandler::handle_DATA: Failed to store message: " + str(err))
             return '400 Could not process your message ' + str(err)
-        return '250 OK'
 
     def store_msg(self, session, envelope):
         self.__log.debug("MsgHandler::store_msg begin store message")
