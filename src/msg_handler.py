@@ -15,13 +15,13 @@ class MsgHandler:
         self.__timeout_sec = 10
         self.__log = Logger(__name__)
 
-    async def handle_DATA(self, server, session, envelope):
+    async def handle_DATA(self, eml):
         try:
             # Some shit may happen on storing message,
             # e.g. half broken MongoDB or connections
             # This solution will definitely return
             signal.alarm(self.__timeout_sec)
-            self.store_msg(session, envelope)
+            self.store_msg(eml)
             signal.alarm(0)
             return '250 OK'
         except OSError as oserr:
@@ -31,8 +31,8 @@ class MsgHandler:
             self.__log.warn("MsgHandler::handle_DATA: Failed to store message: " + str(err))
             return '400 Could not process your message ' + str(err)
 
-    def store_msg(self, session, envelope):
+    def store_msg(self, eml):
         self.__log.debug("MsgHandler::store_msg begin store message")
         storage = Storage()
-        storage.store_msg(session.peer, envelope.mail_from, envelope.rcpt_tos, envelope.content)
+        storage.store_msg(eml.peer, eml.mail_from, eml.rcpt_tos, eml.content)
         self.__log.debug("MsgHandler::store_msg end store message")

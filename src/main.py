@@ -1,93 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
 import sys
-import pwd
-import grp
-import signal
-from config import Config
-from server import Server
+import asyncio
 from logger import Logger
-from lmtp import LMTPServerRunner
+from eml import Eml
+from msg_handler import MsgHandler
 
+
+def usage():
+    print("usage: postfix-plugin.py ${client_address} ${client_hostname} ${sender} ${recipient}\n")
+
+
+if len(sys.argv) != 5:
+    usage()
+    exit(1)
+
+
+eml = Eml()
+eml.peer = sys.argv[1]
+eml.hostname = sys.argv[2]
+eml.mail_from = sys.argv[3]
+eml.rcpt_tos = sys.argv[4]
 
 log = Logger(__name__)
+eml.content = bytes("".join(sys.stdin.readlines()), "utf-8")
 
-def delpid():
-    try:
-        os.remove(lockFileName)
-    except OSError as err:
-        log.info('someone already deleted ' + lockFileName + ": " + err.strerror)
-
-
-def sigterm_handler(signum, frame):
-    if Server.getServer() is not None:
-        Server.getServer().close()
-    if Server.getThreadLock() is not None:
-        Server.getThreadLock().release()
-
-    log.info('webservice.server shutdown')
-    sys.exit()
-
-
-def sigint_handler(signum, frame):
-    if Server.getServer() is not None:
-        Server.getServer().close()
-
-    log.info(__name__ + ' shutdown')
-    sys.exit()
-
-
-def initial_program_setup_user():
-    log.info(__name__ + ' startup')
-
-
-def initial_program_setup_root():
-    if cadmGid == 0:
-        print("I am not willing to run in group root")
-        sys.exit(1)
-    if cadmUid == 0:
-        print("I am not willing to run as root")
-        sys.exit(1)
-
-    try:
-        os.mkdir(lockFileDir)
-        os.chown(lockFileDir, cadmUid, cadmGid)
-    except FileExistsError:
-        log.info(lockFileDir + " already exists")
-    except OSError as err:
-        print("cannot mkdir " + lockFileDir + " {0}\n)".format(err))
-
-    signal.signal(signal.SIGTERM, sigterm_handler)
-    signal.signal(signal.SIGINT, sigint_handler)
-
-
-def reload():
-    log.info('webservice.server reload')
-
-
-def do_main_program():
-    LMTPServerRunner()
-
-
-runUser = Config.getRunUser()
-runGrp = Config.getRunGrp()
-
-lockFileDir = Config.getLockFileDir()
-lockFileName = lockFileDir + '/server.pid'
-
-if not os.path.isdir(lockFileDir):
-    os.mkdir(lockFileDir)
-pidFile = open(lockFileName, "w", encoding="utf-8")
-pidFile.write(str(os.getpid()))
-pidFile.close()
-
-cadmUid = pwd.getpwnam(runUser).pw_uid
-cadmHome = pwd.getpwnam(runUser).pw_dir
-cadmGid = grp.getgrnam(runGrp).gr_gid
-
-initial_program_setup_root()
-initial_program_setup_user()
-
-do_main_program()
+msg_handler = MsgHandler()
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+loop.run_until_complete(msg_handler.handle_DATA(eml))

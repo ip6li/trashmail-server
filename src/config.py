@@ -65,25 +65,5 @@ class Config:
         return Config.__getItem("max_age")
 
     @staticmethod
-    def getRunUser():
-        return Config.__runUser
-
-    @staticmethod
-    def getRunGrp():
-        return Config.__runGrp
-
-    @staticmethod
-    def getLockFileDir():
-        return Config.__getItem("lockFileDir")
-
-    @staticmethod
-    def getBind():
-        return Config.__getItem("bind")
-
-    @staticmethod
-    def getPort():
-        return int(Config.__getItem("port"))
-
-    @staticmethod
     def getTimeout():
         return int(Config.__getItem("timeout"))
