@@ -36,8 +36,12 @@ class Storage:
             self.__log.crit("Storage::__decode_msg: " + str(err))
 
     def store_msg(self, peer, mailfrom, rcpttos, data):
+        for rcpt in rcpttos:
+            rcpt = rcpt.lower()
+            self.store_msg_to_user(peer, mailfrom, rcpt, data)
+
+    def store_msg_to_user(self, peer, mailfrom, rcpt, data):
         headers = MailParser.parseMail(data)
-        lower_rcpt_tos = rcpttos.lower()
         timestamp = int(time.time())
         try:
             self.__log.debug("begin parsing message")
@@ -45,7 +49,7 @@ class Storage:
                 "timestamp": timestamp,
                 "mailPeer": peer,
                 "mailFrom": mailfrom,
-                "mailTo": lower_rcpt_tos,
+                "mailTo": rcpt,
                 "headers": self.__decode_headers(headers),
                 "data": self.__decode_msg(data),
             }

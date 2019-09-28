@@ -9,10 +9,10 @@ from msg_handler import MsgHandler
 
 
 def usage():
-    print("usage: postfix-plugin.py ${client_address} ${client_hostname} ${sender} ${recipient}\n")
+    print("usage: postfix-plugin.py ${client_address} ${client_hostname} ${sender} ${recipient} ...\n")
 
 
-if len(sys.argv) != 5:
+if len(sys.argv) < 5:
     usage()
     exit(1)
 
@@ -21,7 +21,12 @@ eml = Eml()
 eml.peer = sys.argv[1]
 eml.hostname = sys.argv[2]
 eml.mail_from = sys.argv[3]
-eml.rcpt_tos = sys.argv[4]
+
+eml.rcpt_tos = []
+rcpt_count = 4
+while rcpt_count < len(sys.argv):
+    eml.rcpt_tos.append(sys.argv[rcpt_count])
+    rcpt_count = rcpt_count + 1
 
 log = Logger(__name__)
 eml.content = bytes("".join(sys.stdin.readlines()), "utf-8")
