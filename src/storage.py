@@ -37,11 +37,7 @@ class Storage:
 
     def store_msg(self, peer, mailfrom, rcpttos, data):
         headers = MailParser.parseMail(data)
-        lower_rcpt_tos = []
-        for rcpt in rcpttos:
-            rcpt = rcpt.lower()
-            lower_rcpt_tos.append(rcpt)
-
+        lower_rcpt_tos = rcpttos.lower()
         timestamp = int(time.time())
         try:
             self.__log.debug("begin parsing message")
