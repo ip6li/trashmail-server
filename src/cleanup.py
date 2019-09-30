@@ -37,6 +37,6 @@ class Cleanup:
 
 
 now = int(time.time())
-from_del_time = now - Config.getMaxAge()
+from_del_time = now - int(Config.getMaxAge())
 #Cleanup.list(now)
 Cleanup.delete(from_del_time)
