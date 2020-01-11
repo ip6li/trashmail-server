@@ -29,7 +29,9 @@ while rcpt_count < len(sys.argv):
     rcpt_count = rcpt_count + 1
 
 log = Logger(__name__)
-eml.content = bytes("".join(sys.stdin.readlines()), "utf-8")
+body = "".join(sys.stdin.readlines())
+body_cleaned = body.encode('utf-8', 'surrogatepass').decode('utf-8', 'replace')
+eml.content = bytes(body_cleaned, "utf-8")
 
 msg_handler = MsgHandler()
 loop = asyncio.new_event_loop()
